@@ -1,23 +1,68 @@
-var path = require('path')
-const express = require('express')
-const mockAPIResponse = require('./mockAPI.js')
+var path = require('path');
+const express = require('express');
+const mockAPIResponse = require('./mockAPI.js');
+const API_URI = "https://api.meaningcloud.com/sentiment-2.1?key=";
+let searchURL = "";
+let projectData={};
+/* EXPRESS */
+const app = express();
+const bodyParser = require('body-parser');
 
-const app = express()
 
-app.use(express.static('dist'))
+/* fetch node */
+const fetch = require("node-fetch");
 
-console.log(__dirname)
+
+app.use(express.static('dist'));
+/* Middleware*/
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+// Cors for cross origin allowance
+const cors = require("cors");
+app.use(cors());
+/*DotENV*/
+const dotenv = require('dotenv');
+dotenv.config();
 
 app.get('/', function (req, res) {
     // res.sendFile('dist/index.html')
-    res.sendFile(path.resolve('src/client/views/index.html'))
-})
+    res.sendFile(path.resolve('src/client/views/index.html'));
+});
 
 // designates what port the app will listen to for incoming requests
-app.listen(8080, function () {
-    console.log('Example app listening on port 8080!')
-})
+app.listen(8081, function () {
+    console.log('Example app listening on port 8081!');
+    console.log(`Your API key is ${process.env.API_KEY}`);
+});
 
-app.get('/test', function (req, res) {
-    res.send(mockAPIResponse)
-})
+
+app.get('/results', function (req, res) {
+    console.log("get called");
+    res.send(projectData);
+});
+
+app.post('/add', function (req, res) {
+    searchURL = req.body.formText;
+    getData(`${API_URI}${process.env.API_KEY}&of=json&url=${searchURL}&lang=en`).then(function (result) {
+        projectData["results"] = result.sentence_list[0].segment_list[0];
+        res.send(result);
+    });
+
+
+});
+
+
+const getData = async (API_URI) => {
+
+    const res = await fetch(API_URI)
+    try {
+
+        return await res.json();
+    } catch (error) {
+        console.log("error", error.code);
+        // appropriately handle the error
+    }
+
+}
+
+
