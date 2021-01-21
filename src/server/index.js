@@ -45,7 +45,8 @@ app.post('/add', function (req, res) {
     searchURL = req.body.formText;
     getData(`${API_URI}${process.env.API_KEY}&of=json&url=${searchURL}&lang=en`).then(function (result) {
         projectData["results"] = result;
-        res.send(result, process.env.API_KEY);
+        console.log(process.env.API_KEY);
+        res.send(result);
     });
 
 
